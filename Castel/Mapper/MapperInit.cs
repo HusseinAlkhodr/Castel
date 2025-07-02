@@ -4,6 +4,8 @@ using Castel.Models.Authentication;
 using Castel.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using AutoMapper;
+using Newtonsoft.Json;
+using Castel.DTO;
 
 namespace Castel.Mapper
 {

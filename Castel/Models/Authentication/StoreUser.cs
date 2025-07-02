@@ -1,4 +1,5 @@
 ﻿using Castel.Core.Unit;
+using Castel.Middlewares;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 
