@@ -3,6 +3,8 @@ using Castel.Core.Unit;
 using Castel.DTO;
 using Castel.Extensions;
 using Castel.Models;
+using Castel.Specification.InvoiceItemSpecification;
+using Castel.Specification.InvoiceSpecification;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Castel.Controllers
@@ -12,12 +14,18 @@ namespace Castel.Controllers
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly ILogger<InvoiceController> _logger;
+        private readonly InvoiceMasterFilterBuilder invoiceMasterFilterBuilder;
+        private readonly InvoiceItemFilterBuilder invoiceItemFilterBuilder;
 
-        public InvoiceController(IUnitOfWork unitOfWork, IMapper mapper, ILogger<InvoiceController> logger)
+        public InvoiceController(IUnitOfWork unitOfWork, IMapper mapper, 
+            ILogger<InvoiceController> logger,InvoiceMasterFilterBuilder invoiceMasterFilterBuilder,
+            InvoiceItemFilterBuilder invoiceItemFilterBuilder)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
             this._logger = logger;
+            this.invoiceMasterFilterBuilder = invoiceMasterFilterBuilder;
+            this.invoiceItemFilterBuilder = invoiceItemFilterBuilder;
         }
         public IActionResult Index()
         {
@@ -34,11 +42,13 @@ namespace Castel.Controllers
 
         //عرض العناصر المباعة
         [HttpGet]
-        public async Task<IActionResult> GetSaledItem(long? id = null)
+        public async Task<IActionResult> GetSaledItem(SaleInvoiceFilterDTO itemDTO,long? id = null)
         {
+            var specification = unitOfWork.SaleInvoiceRepository.InjectSpecification(invoiceItemFilterBuilder, itemDTO);
             var SaleInvoice = await unitOfWork.SaleInvoiceRepository.GetAll(
                 filter: i => id == null || i.SaleInvoiceMasterId == id,
-                includeProperties: "Item,Division,Vendor");
+                includeProperties: "Item,Division,Vendor",
+                extendQuery:specification);
             var divisions = await unitOfWork.DivisionRepository.GetAll();
             ViewBag.Divisions = divisions.Select(d => new { d.id, d.Name }).ToList();
             //ViewBag.Divisions = new SelectList(divisions, "Id", "Name");
@@ -91,10 +101,12 @@ namespace Castel.Controllers
 
         // عرض كل فواتير البيع
         [HttpGet]
-        public async Task<IActionResult> GetSaleInvoice()
+        public async Task<IActionResult> GetSaleInvoice(InvoiceMasterFilterDTO filterDTO)
         {
-            var saleInvoice = await unitOfWork.SaleInvoiceMasterRepository.GetAll(includeProperties:
-                $"{nameof(SaleInvoiceMaster.SaleInvoices)}");
+            var specification = unitOfWork.SaleInvoiceMasterRepository.InjectSpecification(invoiceMasterFilterBuilder,filterDTO);
+            var saleInvoice = await unitOfWork.SaleInvoiceMasterRepository.GetAll(
+                includeProperties: $"{nameof(SaleInvoiceMaster.SaleInvoices)}",
+                extendQuery: specification);
             var SaleInvoiceList = new List<InvoiceDTO>();
 
             foreach (var Invoice in saleInvoice)
