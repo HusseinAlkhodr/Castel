@@ -1,0 +1,9 @@
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.csproj.AssemblyReference.cache
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.AssemblyInfoInputs.cache
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.AssemblyInfo.cs
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.csproj.CoreCompileInputs.cache
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.RazorAssemblyInfo.cache
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.RazorAssemblyInfo.cs
+C:\Users\h.khodr\source\repos\Castel\Castel\obj\Debug\net8.0\Castel.sourcelink.json
