@@ -1,0 +1,57 @@
+﻿@model Castel.DTO.EditPrice
+
+@{
+    ViewData["Title"] = "تعديل السعر";
+}
+
+<h1>تعديل السعر</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="EditPrice">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <dl class="row">
+
+                <dd hidden>
+                    @Html.HiddenFor(model => model.Id)
+                </dd>
+
+                <dt class="col-sm-3">الوصف</dt>
+                <dd class="col-sm-9">
+                    @Html.TextBoxFor(model => model.Description, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                </dd>
+
+                <dt class="col-sm-3">السعر التكلفة بالدولار</dt>
+                <dd class="col-sm-9">
+                    @Html.TextBoxFor(model => model.PriceInDollar, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.PriceInDollar, "", new { @class = "text-danger" })
+                </dd>
+
+
+                <dt class="col-sm-3">سعر البيع بالدولار</dt>
+                <dd class="col-sm-9">
+                    @Html.TextBoxFor(model => model.NetAmountInDollar, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.NetAmountInDollar, "", new { @class = "text-danger" })
+                </dd>
+
+
+            </dl>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="حفظ" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<div>
+    <a asp-action="Index">العودة الى القائمة</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

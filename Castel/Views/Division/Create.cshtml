@@ -1,0 +1,39 @@
+﻿@model Castel.DTO.AddDivisionDTO
+
+@{
+    ViewData["Title"] = "اضافة قسم";
+}
+
+<h1>اضافة قسم</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Code" class="control-label"></label>
+                <input asp-for="Code" class="form-control" placeholder="ادخل رمز القسم"/>
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="ادخل اسم القسم" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ShortName" class="control-label"></label>
+                <input asp-for="ShortName" class="form-control" placeholder="ادخل الإسم المختصر" />
+                <span asp-validation-for="ShortName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="اضافة" class="btn btn-primary" /> |
+                <a asp-action="Index" class="btnbtn-secondary">العودة الى قائمة الأقسام</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

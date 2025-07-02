@@ -1,0 +1,61 @@
+﻿@model Castel.DTO.GetItemDTO
+
+@{
+    ViewData["Title"] = "عرض المادة";
+}
+
+<h1>عرض المادة</h1>
+
+<div class="container">
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <strong>الباركود:</strong> @Model.Barcode
+        </div>
+        <div class="col-sm-6">
+            <strong>المادة:</strong> @Model.Description
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <strong>القسم:</strong> @Model.DivisionName
+        </div>
+        <div class="col-sm-6">
+            <strong>المورد:</strong> @Model.VendorName
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <strong>سعر الشراء بالدولار:</strong> @Model.PriceInDollar
+        </div>
+        <div class="col-sm-6">
+            <strong>سعر الشراء بالليرة:</strong> @Model.Price
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <strong>سعر المبيع بالدولار:</strong> @Model.NetAmountInDollar
+        </div>
+        <div class="col-sm-6">
+            <strong>سعر المبيع بالليرة:</strong> @Model.NetAmount
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <strong>الكمية الموجودة:</strong> @Model.Qty
+        </div>
+        <div class="col-sm-6">
+            <strong>العمليات:</strong>
+            <a asp-action="Delete" asp-route-id="@Model.id" class="btn btn-danger btn-sm">حذف</a>
+            <a asp-action="Edit" asp-route-id="@Model.id" class="btn btn-warning btn-sm">تعديل</a>
+            <a asp-action="EditPrice" asp-route-id="@Model.id" class="btn btn-info btn-sm">تعديل سعر</a>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-secondary">العودة إلى القائمة</a>
+    </div>
+</div>

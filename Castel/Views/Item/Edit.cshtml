@@ -1,0 +1,52 @@
+﻿@model Castel.DTO.UpdateItemDTO
+
+@{
+    ViewData["Title"] = "تعديل مادة";
+}
+
+<h1>تعديل مادة</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group" hidden>
+                <label asp-for="Id" class="control-label"></label>
+                <input asp-for="Id" class="form-control"/>
+                <span asp-validation-for="Id" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Barcode" class="control-label">الباركود</label>
+                <input asp-for="Barcode" class="form-control"/>
+                <span asp-validation-for="Barcode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label">الوصف</label>
+                <input asp-for="Description" class="form-control"/>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NetAmountDollar" class="control-label">سعر المبيع بالدولار</label>
+                <input asp-for="NetAmountDollar" class="form-control" />
+                <span asp-validation-for="NetAmountDollar" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NetAmount" class="control-label">سعر المبيع</label>
+                <input asp-for="NetAmount" class="form-control"/>
+                <span asp-validation-for="NetAmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="حفظ" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" class="btn btn-primary">العودة الى القائمة</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

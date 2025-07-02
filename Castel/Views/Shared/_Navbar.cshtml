@@ -1,0 +1,75 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Castel.Models.Authentication
+@inject UserManager<StoreUser> UserManager
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var displayName = user?.FullName ?? User.Identity.Name;
+}
+<nav class="navbar navbar-expand-lg bg-light bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">القلعة</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">فاتورة</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" asp-controller="Invoice" asp-action="CreateSaleInvoice">فاتورة بيع</a></li>
+                        <li><a class="dropdown-item" asp-controller="Invoice" asp-action="CreateBuyInvoice">فاتورة شراء</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Item" asp-action="Index">المواد</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Division" asp-action="Index">الاقسام</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Vendor" asp-action="Index">الموردون</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">تقارير</a>
+                    <ul class="dropdown-menu">
+                        
+                        <li><a class="dropdown-item" asp-controller="Invoice" asp-action="GetSaleInvoice">فواتير البيع</a></li>
+                        <li><a class="dropdown-item" asp-controller="Invoice" asp-action="GetBuingInvoice">فواتير الشراء</a></li>
+                        <li><a class="dropdown-item" asp-controller="Invoice" asp-action="GetSaledItem">المبيعات</a></li>
+                        <li><a class="dropdown-item" asp-controller="Invoice" asp-action="GetBuyingItem">المشتريات</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <form asp-controller="Item" asp-action="ChangePrice" class="d-flex" role="search">
+                <input class="form-control me-2" type="search" id="rate" name="rate" placeholder="سعر الصرف" aria-label="سعر الصرف" oninput="validateRate()" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                <button class="btn btn-outline-success" type="submit" id="submitBtn" disabled>تغيير</button>
+            </form>
+        </div>
+        <div>
+            <span> &nbsp; </span>
+        </div>
+        <div>
+            <ul class ="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class=" dropdown-toggle btn btn-success" href="#" role="button" data-bs-toggle="dropdown">
+                        @displayName
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item"  href="#">اعدادات الحساب</a></li>
+                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout" >تسجيل خروج</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<script>
+    function validateRate() {
+        const rateInput = document.getElementById('rate');
+        const submitBtn = document.getElementById('submitBtn');
+        const value = rateInput.value.trim();
+
+        // تحقق من أن القيمة عدد صحيح موجب (واحد أو أكثر)
+        const isValidPositiveInteger = /^[1-9]\d*$/.test(value);
+
+        submitBtn.disabled = !isValidPositiveInteger;
+    }
+</script>

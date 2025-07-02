@@ -1,0 +1,40 @@
+﻿@model IEnumerable<Castel.DTO.GetDivisionDTO>
+
+@{
+    ViewData["Title"] = "قائمة الأقسام";
+}
+
+<h1>قائمة الأقسام</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">إضافة قسم</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>الرقم</th>
+            <th>الاسم</th>
+            <th>الاسم المختصر</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var i = 1;
+        }
+    @foreach (var item in Model) {
+            <tr>
+                <td>@(i++)</td>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.ShortName)</td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a asp-action="Edit" asp-route-id="@item.id" class="btn btn-warning">تعديل</a> | 
+                        <a asp-action="Details" asp-route-id="@item.id" class="btn btn-primary">عرض</a> | 
+                        <a asp-action="Delete" asp-route-id="@item.id" class="btn btn-danger">حذف</a>
+                    </div>
+                </td>
+            </tr>
+    }
+    </tbody>
+</table>
