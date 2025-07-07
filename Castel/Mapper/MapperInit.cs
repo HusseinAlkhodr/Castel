@@ -2,10 +2,10 @@
 using Castel.DTO.Result;
 using Castel.Models.Authentication;
 using Castel.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using AutoMapper;
 using Newtonsoft.Json;
 using Castel.DTO;
+using Microsoft.OpenApi.Extensions;
 
 namespace Castel.Mapper
 {
@@ -28,12 +28,14 @@ namespace Castel.Mapper
                             ? null
                             : src.UserRoles.Select(x => x.Role)));
 
-            CreateMap<ItemDTO, Item>().ReverseMap();
+            CreateMap<ItemDTO, Item>();
+            CreateMap<Item, ItemDTO>();
             CreateMap<Invoice, Item>().ReverseMap();
             CreateMap<Invoice, GetInvoice>().ReverseMap();
             CreateMap<AddItemDTO, Item>().ReverseMap();
             CreateMap<UpdateItemDTO, Item>().ReverseMap();
-            CreateMap<Item, GetItemDTO>().ReverseMap();
+            CreateMap<Item, GetItemDTO>()
+                .ForMember(des => des.typeName, opt =>opt.MapFrom(src => src.Type.GetDisplayName()));
             CreateMap<Item, DeleteItemDTO>().ReverseMap();
             CreateMap<Item, EditPrice>().ReverseMap();
 

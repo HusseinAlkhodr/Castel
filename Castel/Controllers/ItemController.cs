@@ -1,11 +1,16 @@
 ﻿using AutoMapper;
 using Castel.Core.Unit;
-using Castel.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc;
 using Castel.DTO;
 using Castel.Extensions;
 using Castel.Middlewares;
+using Castel.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+
 
 namespace Castel.Controllers
 {
@@ -215,5 +220,22 @@ namespace Castel.Controllers
         {
             return (await unitOfWork.ExchangeRateRepository.GetAll(orderBy: o => o.OrderByDescending(c => c.CreatedAt))).First().exchangeRate;
         }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchForPurchase(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+                return Ok(new List<ItemDTO>());
+            var lowerTerm = term.ToLower();
+            var results = await unitOfWork.ItemRepository.GetAll(
+                x =>
+                x.Description != null && 
+                x.Barcode != null &&
+                (x.Description.ToLower().Contains(lowerTerm) || x.Barcode.Contains(lowerTerm))
+                );
+            var itemdto = mapper.Map<List<ItemDTO>>(results);
+            return Ok(itemdto);
+        }
+
     }
 }

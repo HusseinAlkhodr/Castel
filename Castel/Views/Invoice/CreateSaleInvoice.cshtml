@@ -3,76 +3,94 @@
 @{
     ViewData["Title"] = "فاتورة بيع";
 }
-
-<h2>فاتورة بيع</h2>
+<!--Invoice Header-->
 <div class="row">
+    <h2 class="col-md-4 mb-2">فاتورة بيع</h2>
     <div class="col-md-8 mb-2">
-        <label for="barcodeInput">أدخل الباركود:</label>
-        <input type="text" id="barcodeInput" class="form-control" placeholder="أدخل رقم الباركود واضغط Enter" onkeydown="handleBarcodeInput(event)" />
-    </div>
-    <div class="col-md-4 mb-2">
-        <label for="pdCurrency">اختر عملة الدفع:</label>
-        <select id="pdCurrency" class="form-select" style="width:fit-content" name="currency" onchange="ChangePrice()">
-            <option value="USD">دولار أمريكي (USD)</option>
-            <option value="SYP" selected>ليرة سورية (SYP)</option>
-        </select>
+        <label>اختر عملة الدفع:</label>
+        <div class="btn-group w-100" role="group" aria-label="Currency selection">
+            <button type="button" id="btnSYP" class="btn btn-outline-primary active" onclick="selectCurrency('SYP')">ليرة سورية (SYP)</button>
+            <button type="button" id="btnUSD" class="btn btn-outline-primary" onclick="selectCurrency('USD')">دولار أمريكي (USD)</button>
+        </div>
+        <input type="hidden" id="pdCurrency" value="SYP" />
     </div>
 </div>
 <hr />
-<div id="productDetails" class="mb-3 d-none">
-    <h5>تفاصيل المنتج</h5>
-    <p hidden><span id="pdId"></span></p>
 
-    <div class="row">
-        <div class="col-md-6 mb-2">
-            <strong>الباركود:&nbsp;&nbsp;</strong> <span id="pdBarcode"></span>
-        </div>
-        <div class="col-md-6 mb-2">
-            <strong>الوصف:&nbsp;&nbsp;</strong> <span id="pdDescription"></span>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6 mb-2">
-            <label for="pdType"><strong>النوع:&nbsp;&nbsp;</strong></label>
-            <select id="pdType" class="form-select" onchange="updatePriceByType()"></select>
-        </div>
-        <div class="col-md-6 mb-2">
-            <label for="pdQuantity">الكمية:&nbsp;&nbsp;</label>
-            <input type="number" id="pdQuantity" value="1" min="1" class="form-control" style="width: 100px;" />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6 mb-2">
-            <label for="pdPrice">سعر القطعة:&nbsp;&nbsp;</label>
-            <input type="number" id="pdPrice" class="form-control" style="width: 100px;" onchange="updatePriceByType()" />
-        </div>
-        <div class="col-md-6 mb-2">
-            <label for="pdTotalPrice">السعر الاجمالي:&nbsp;&nbsp;</label>
-            <input type="number" id="pdTotalPrice" class="form-control" style="width: 100px;" readonly />
-        </div>
-    </div>
-    <button class="btn btn-success mt-2" onclick="addProductToTable()">إضافة</button>
-</div>
-
-<table class="table table-striped table-bordered text-center align-middle" id="invoiceTable">
+<table class="table table-bordered table-hover text-center align-middle w-auto" id="invTable" style="table-layout: auto;">
     <thead class="table-dark">
         <tr>
-            <!-- لا نعرض رأس ID لأنه مخفي -->
             <th>الباركود</th>
             <th>الوصف</th>
             <th>النوع</th>
-            <th>السعر</th>
+            <th>سعر القطعة</th>
             <th>الكمية</th>
             <th>الإجمالي</th>
             <th>العمليات</th>
         </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+        <!-- صف الإدخال -->
+        <tr id="inputRow" class="input-row">
+            <td class="d-flex gap-1">
+                <input type="text" class="form-control barcode-input" placeholder="ادخل الباركود" style="width: auto;"/>
+                <button type="button" class="btn btn-outline-secondary" onclick="openSearchModal(this)">🔍</button>
+            </td>
+
+            <td style="width: auto;"><input type="text" class="form-control description-input" id="inputDescription" readonly /></td>
+            <td>
+                <select class="form-select type-select" style="width: 100px;" id="inputType" onchange="updateInputRowPrice()">
+                    <option value="Piece">قطعة</option>
+                    <option value="Package">طرد</option>
+                    <option value="Cruise">كروز</option>
+                </select>
+            </td>
+            <td style="width: auto;"><input type="number" class="form-control price-input" id="inputPrice" onchange="updateInputRowPrice()" /></td>
+            <td style="width: 95px;"><input type="number" class="form-control quantity-input" id="inputQuantity" value="1" min="1" onchange="updateInputRowPrice()" /></td>
+            <td style="width: auto;"><input type="number" class="form-control total-input" id="inputTotal" readonly /></td>
+            <td>
+                <button class="btn btn-success btn-sm" onclick="finalizeInputRow(this)">✔</button>
+            </td>
+
+            <td></td> <!-- خلية العمليات تبقى فارغة في صف الإدخال -->
+        </tr>
+    </tbody>
 </table>
-<div class="mt-3">
+
+<div class="mt-3 text-end">
+    <strong>عدد المواد:</strong> <span id="totalItems">0</span> &nbsp;&nbsp;
     <strong>الإجمالي الكلي:</strong> <span id="totalAmount">0</span>
+    <span id="currencyLabel" class="curr">SYP</span>
 </div>
+
 <button class="btn btn-primary mt-3" id="submitButton" onclick="submitInvoice()" disabled>بيع</button>
+<!-- Modal للبحث عن المواد -->
+<div class="modal fade" id="itemSearchModal" tabindex="-1" aria-labelledby="itemSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="itemSearchModalLabel">البحث عن مادة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control mb-3" id="searchKeyword" placeholder="ابحث بالاسم أو الباركود..." />
+                <table class="table table-hover text-center">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>الباركود</th>
+                            <th>الوصف</th>
+                            <th>النوع</th>
+                            <th>اختيار</th>
+                        </tr>
+                    </thead>
+                    <tbody id="searchResults">
+                        <tr><td colspan="4">ابدأ بالبحث...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -83,269 +101,317 @@
 
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
-        const invoiceItems = [];
-        let basePrice = 0;
-        let basePriceInDollar = 0;
-        function handleBarcodeInput(event)
+        let currentRow = null;
+        let dataRows = 0;
+        //لمودل البحث
+        document.getElementById('searchKeyword').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                // نفذ ما تريده هنا عند الضغط على Enter
+                 searchItems();
+            }
+        });
+        
+        //for select payment currency
+        function selectCurrency(currency) {
+            document.getElementById("pdCurrency").value = currency;
+
+            document.getElementById("btnSYP").classList.remove("active");
+            document.getElementById("btnUSD").classList.remove("active");
+
+            if (currency === "SYP") {
+                document.getElementById("btnSYP").classList.add("active");
+                 document.getElementById("currencyLabel").textContent ="SYP";
+             } else {
+                document.getElementById("btnUSD").classList.add("active");
+                document.getElementById("currencyLabel").textContent ="USD";
+            }
+
+            // إذا كان في عمليات تعتمد على تغيير العملة (مثل تحديث الأسعار)، نفذها هنا
+            if (typeof onCurrencyChanged === "function") {
+                onCurrencyChanged(currency);
+            }
+            
+            updateTotalAmount();
+
+        }
+        //for add item to invoice
+        function convertInputRowToDataRow(row) 
         {
-            if (event.key === "Enter") {
+            const barcode = row.querySelector('.barcode-input').value.trim();
+            const description = row.querySelector('.description-input').value.trim();
+            const typeSelect = row.querySelector('.type-select');
+            const typeValue = typeSelect.value;
+            const typeText = typeSelect.options[typeSelect.selectedIndex].text;
+            const price = parseFloat(row.querySelector('.price-input').value);
+            const quantity = parseInt(row.querySelector('.quantity-input').value);
+            const total = parseFloat(row.querySelector('.total-input').value);
+
+            if (!barcode || !description || !price || !quantity || !total) {
+                alert('يرجى إكمال بيانات المنتج بشكل صحيح.');
+                return false;
+            }
+
+            // تحقق إذا المنتج موجود مسبقاً (دمج الكميات)
+            const tbody = document.querySelector('#invTable tbody');
+            dataRows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('input-row'));
+            let existingRow = null;
+            dataRows.forEach
+            (r => 
+                {
+                    if (r.children[0].innerText === barcode) 
+                    {
+                        existingRow = r;
+                    }
+                }
+            );
+
+            if (existingRow) 
+            {
+                // دمج الكميات والسعر الكلي فقط، لا تضيف صف جديد
+                const oldQty = parseInt(existingRow.children[4].innerText);
+                const newQty = oldQty + quantity;
+                const newTotal = price * newQty;
+
+                existingRow.children[4].innerText = newQty;
+                existingRow.children[5].innerText = newTotal.toFixed(2);
+
+                // امسح سطر الإدخال الحالي
+                row.remove();
+            } 
+            else 
+            {
+                // تحويل السطر إلى عرض بيانات
+                row.classList.remove('input-row');
+                row.innerHTML = `
+                    <td>${barcode}</td>
+                    <td>${description}</td>
+                    <td data-type="${typeValue}">${typeText}</td>
+                    <td>${price.toFixed(2)}</td>
+                    <td>${quantity}</td>
+                    <td>${total.toFixed(2)}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑 حذف</button></td>
+                `;
+            }
+
+            // أضف سطر إدخال جديد في الأسفل (إن لم يكن موجود)
+            if (!tbody.querySelector('.input-row')) {
+                addNewInputRow();
+            }
+            
+            updateTotalAmount();
+            return true;
+        }
+        //add new input row
+        function addNewInputRow() {
+            const tbody = document.querySelector('#invTable tbody');
+            const tr = document.createElement('tr');
+            tr.classList.add('input-row');
+            tr.innerHTML = `
+                <td class="d-flex gap-1">
+                    <input type="text" class="form-control barcode-input" placeholder="ادخل الباركود" />
+                    <button type="button" class="btn btn-outline-secondary" onclick="openSearchModal()">🔍</button>
+                </td>
+                <td><input type="text" class="form-control description-input" readonly /></td>
+                <td>
+                    <select class="form-select type-select">
+                        <option value="Piece">قطعة</option>
+                        <option value="Package">طرد</option>
+                        <option value="Cruise">كروز</option>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control price-input" /></td>
+                <td><input type="number" class="form-control quantity-input" value="1" min="1" /></td>
+                <td><input type="number" class="form-control total-input" readonly /></td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="finalizeInputRow(this)">✔</button>
+                </td>
+                <td></td>
+            `;
+            tbody.appendChild(tr);
+            attachInputRowEvents(tr);
+            tr.querySelector('.barcode-input').focus();
+        }
+        //barcode insert action
+       function handleBarcodeInputEnter(event) 
+       {
+            if (event.key === 'Enter') {
+                const row = event.target.closest('tr');
                 const barcode = event.target.value.trim();
+                if (!barcode) return;
+
                 fetch(`/Item/GetForSale?barcode=${barcode}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error("المنتج غير موجود");
-                        return response.json();
+                    .then(res => {
+                        if (!res.ok) throw new Error('المادة غير موجودة');
+                        return res.json();
                     })
                     .then(product => {
-                        const currency = document.getElementById("pdCurrency").value;
-                        // تعبئة الحقول
-                        document.getElementById("pdId").innerText = product.id;
-                        document.getElementById("pdBarcode").innerText = product.barcode;
-                        document.getElementById("pdDescription").innerText = product.description;
-                        // السعر الأساسي بالدولار
-                        basePriceInDollar = product.netAmountInDollar || 1;
-                        basePrice = product.netAmount || 1;
-                        if(currency == "USD"){
-                            document.getElementById("pdPrice").value = basePriceInDollar;
-                            document.getElementById("pdTotalPrice").value = basePriceInDollar;
-                        }else if(currency == "SYP"){
-                            document.getElementById("pdPrice").value = basePrice;
-                            document.getElementById("pdTotalPrice").value = basePrice;
-                        }
-                        document.getElementById("pdQuantity").value = 1;
-                        // تعبئة نوع المنتج في القائمة المنسدلة
-                        const typeSelect = document.getElementById("pdType");
-                        typeSelect.innerHTML = ""; // إفراغ القائمة أولاً
-                        const types = [
-                            { value: "Piece", text: "قطعة" },
-                            { value: "Package", text: "طرد" },
-                            { value: "Cruise", text: "كروز" }
-                        ];
-                        types.forEach(t => {
-                            const opt = document.createElement("option");
-                            opt.value = t.value;
-                            opt.text = t.text;
-                            if (t.text === product.typeName) opt.selected = true;
-                            typeSelect.appendChild(opt);
-                        });
+                        // تعبيئة بيانات المنتج في الصف
+                        row.querySelector('.description-input').value = product.description || '';
+                        row.querySelector('.price-input').value = document.getElementById('pdCurrency').value === 'USD'
+                            ? (product.netAmountInDollar || 1)
+                            : (product.netAmount || 1);
 
-                        // تحديث السعر حسب النوع مباشرة
-                        updatePriceByType();
-                        document.getElementById("productDetails").classList.remove("d-none");
-                        invoiceItems.push(product);
+                        // تعيين نوع المنتج
+                        const typeSelect = row.querySelector('.type-select');
+                        for (let i = 0; i < typeSelect.options.length; i++) {
+                            if (typeSelect.options[i].text === product.typeName) {
+                                typeSelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                         
+                        updateInputRowPrice(row); // هذا سيحسب total مباشرة بعد ملء البيانات
+
+                        // لا تقم بتحويل السطر الآن (لا تستدع convertInputRowToDataRow)
+                        // المستخدم يستطيع تعديل الكمية أو السعر ثم الضغط على زر "إضافة" أو Enter لاحقًا لإتمام التحويل (لو أردت).
                     })
                     .catch(err => {
                         alert(err.message);
-                        document.getElementById("productDetails").classList.add("d-none");
+                        clearInputRow(row);
                     });
             }
         }
-        function updatePriceByType() {
-            const type = document.getElementById("pdType").value;
-            const price = parseFloat(document.getElementById("pdPrice").value);
-            let finalPrice = 0;
 
-            if (type === "Package") {
-                finalPrice = price * 20;
-            } else if (type === "Cruise") {
-                finalPrice = price * 10;
-            } else{
-                finalPrice = price ;
-            }
+        //update total from type
+        function updateInputRowPrice(row) {
+            const type = row.querySelector('.type-select').value;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            const quantity = parseInt(row.querySelector('.quantity-input').value) || 1;
 
-            document.getElementById("pdTotalPrice").value = finalPrice.toFixed(2);
+            let finalPrice = price;
+            if (type === 'Package') finalPrice *= 20;
+            else if (type === 'Cruise') finalPrice *= 10;
+
+            row.querySelector('.total-input').value = (finalPrice * quantity).toFixed(2);
         }
-        function ChangePrice(){
-            const currency = document.getElementById("pdCurrency").value;
-            let finalPrice = basePrice;
-            if(currency == "USD"){
-                finalPrice = basePriceInDollar;
-            } else if(currency == "SYP"){
-                finalPrice = basePrice;
-            }
-            document.getElementById("pdPrice").value = finalPrice;
-            updatePriceByType()
-
+        //clear input row content
+        function clearInputRow(row) {
+            row.querySelector('.barcode-input').value = '';
+            row.querySelector('.description-input').value = '';
+            row.querySelector('.price-input').value = '';
+            row.querySelector('.quantity-input').value = 1;
+            row.querySelector('.total-input').value = '';
+            row.querySelector('.barcode-input').focus();
         }
-        //اضافة المادة الى الجدول
-        function addProductToTable() {
-            const barcode = document.getElementById("pdBarcode").innerText;
-            const description = document.getElementById("pdDescription").innerText;
 
-            // احصل على النص الظاهر من القائمة (العربي)
-            const typeSelect = document.getElementById("pdType");
-            const typeValue = typeSelect.value;                              // مثل: "Package"
-            const typeText = typeSelect.options[typeSelect.selectedIndex].text; // مثل: "طرد"
-            const price = parseFloat(document.getElementById("pdTotalPrice").value);
-            const quantity = parseInt(document.getElementById("pdQuantity").value);
-            const item = invoiceItems.find(p => p.barcode === barcode);
-            const id = item?.id || 0;
-
-            const total = price * quantity;
-
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td style="display:none;">${id}</td>
-                <td>${barcode}</td>
-                <td>${description}</td>
-                <td data-type="${typeValue}">${typeText}</td>
-                <td>${price}</td>
-                <td>${quantity}</td>
-                <td>${total.toFixed(2)}</td>
-                <td>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑 حذف</button>
-                </td>
-            `;
-            document.querySelector("#invoiceTable tbody").appendChild(row);
-            updateSubmitButtonState();
+        function removeRow(button) {
+            button.closest('tr').remove();
             updateTotalAmount();
-
-            // تنظيف
-            document.getElementById("barcodeInput").value = "";
-            document.getElementById("productDetails").classList.add("d-none");
         }
+
+        
+        //update invoice total
         function updateTotalAmount() {
-            const rows = document.querySelectorAll("#invoiceTable tbody tr");
+            
+            const rows = document.querySelectorAll('#invTable tbody tr:not(.input-row)');
             let total = 0;
-            rows.forEach(row => {
-                total += parseFloat(row.children[6].innerText); // الإجمالي = العمود السادس
+            rows.forEach(r => {
+                total += parseFloat(r.children[5].innerText);
             });
             document.getElementById("totalAmount").innerText = total.toFixed(2);
+            document.getElementById("totalItems").innerText = rows.length;
+
+            const disableCurrency = dataRows.length > 0;
+            alert(disableCurrency);
+            document.getElementById("btnSYP").disabled = disableCurrency;
+            document.getElementById("btnUSD").disabled = disableCurrency;
+
+            const currency = document.getElementById("pdCurrency").value;
+            document.getElementById("currencyLabel").innerText = `(${currency})`;
         }
-        function removeRow(button)
+        // ربط أحداث الإدخال على صف الإدخال الحالي
+        function attachInputRowEvents(row) {
+            row.querySelector('.barcode-input').addEventListener('keydown', handleBarcodeInputEnter);
+            row.querySelector('.price-input').addEventListener('input', () => updateInputRowPrice(row));
+            row.querySelector('.quantity-input').addEventListener('input', () => updateInputRowPrice(row));
+            row.querySelector('.type-select').addEventListener('change', () => updateInputRowPrice(row));
+        }
+        // عند تحميل الصفحة اربط الأحداث على السطر الأول
+        window.addEventListener('DOMContentLoaded', () => {
+            const inputRow = document.querySelector('.input-row');
+            attachInputRowEvents(inputRow);
+        });
+
+        // فتح المودال
+        function openSearchModal(button) 
         {
-            const row = button.closest("tr");
-            row.remove();
-            updateSubmitButtonState();
+            currentRow = button.closest('tr');
+            const modal = new bootstrap.Modal(document.getElementById('itemSearchModal'));
+            document.getElementById('searchKeyword').value = '';
+            document.getElementById('searchResults').innerHTML = '<tr><td colspan="4">ابدأ بالبحث...</td></tr>';
+            modal.show();
         }
-        function updateSubmitButtonState() {
-            const hasRows = document.querySelectorAll("#invoiceTable tbody tr").length > 0;
-            document.getElementById("submitButton").disabled = !hasRows;
-            document.getElementById("pdCurrency").disabled = hasRows;
-        }
-        function submitInvoice() {
-            const rows = document.querySelectorAll("#invoiceTable tbody tr");
-            const invoices = [];
 
-            rows.forEach(row => {
-                invoices.push({
-                    id: parseInt(row.children[0].innerText),           // ID من العمود المخفي
-                    barcode: row.children[1].innerText,
-                    description: row.children[2].innerText,
-                    type: row.children[3].getAttribute("data-type"), // القيمة البرمجية
-                    typeName: row.children[3].innerText,
-                    netAmount: parseFloat(row.children[4].innerText),
-                    qty: parseInt(row.children[5].innerText),
-                    payType : document.getElementById("pdCurrency").value
+        // تنفيذ البحث
+        function searchItems() {
+            const keyword = document.getElementById("searchKeyword").value.trim();
+            if (keyword.length < 2) return;
+
+            fetch(`/Item/SearchForPurchase?term=${encodeURIComponent(keyword)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("searchResults");
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4">لا توجد نتائج</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.map(item => `
+                        <tr>
+                            <td>${item.barcode}</td>
+                            <td>${item.description}</td>
+                            <td><button class="btn btn-sm btn-primary" onclick='selectItemFromSearch(${JSON.stringify(item)})'>اختيار</button></td>
+                        </tr>
+                    `).join("");
                 });
-            });
-            fetch("/Invoice/CreateSaleInvoice", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(invoices)
-            }).then(response => {
-                if (!response.ok)
-                    throw new Error("فشل البيع");
-                return response.json();
-            }).then(data => {
-                showInvoiceResult(data,invoices);
-            })
-
-            .catch(error => alert("خطأ أثناء البيع: " + error.message));
         }
-        const invoiceData = {
-            invoiceNumber: '',
-            items: []
-        };
 
-        function showInvoiceResult(data,invoices) {
-            const now = new Date().toLocaleString("ar-EG", {
-                day: '2-digit', month: 'long', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                hour12: true
-            });
-            const itemTypeMap = {
-                Piece: "قطعة",
-                Package: "طرد",
-                Cruise: "كروز"
-            };
-            // بنية الجدول وعناصره
-            let totalAll = 0;
-            let rowsHtml = invoices.map(item => {
-                const lineTotal = item.netAmount * item.qty;
-                totalAll += lineTotal;
-                return `
-                  <tr style="border-collapse: collapse;" border="1">
-                    <td>${item.description}</td>
-                    <td>${itemTypeMap[item.type]}</td>
-                    <td>${item.netAmount.toFixed(2)}</td>
-                    <td>${item.qty}</td>
-                    <td>${lineTotal.toFixed(2)}</td>
-                  </tr>`;
-                }).join("");
+        // تعبئة البيانات عند اختيار مادة من البحث
+        function selectItemFromSearch(product) 
+        {
+            const currency = document.getElementById('pdCurrency').value;
+            const inputRow = document.getElementById('inputRow');
+            
+            inputRow.querySelector('.barcode-input').value = product.barcode;
+            inputRow.querySelector('.description-input').value = product.description;
+            
+            const typeSelect = inputRow.querySelector('.type-select');
+            if (product.typeName === 'قطعة') typeSelect.value = 'Piece';
+            else if (product.typeName === 'طرد') typeSelect.value = 'Package';
+            else if (product.typeName === 'كروز') typeSelect.value = 'Cruise';
 
-                const htmlContent = 
-                '<!DOCTYPE html>'+
-                '<html lang="ar" dir="rtl">'+
-                '<head>'+
-                    '<meta charset="UTF-8">'+
-                    '<title>فاتورة بيع<\/title>'+
-                    '<style>'+
-                        'body { font-family: Arial; padding: 20px; }'+
-                        'h2 { text-align: center; margin-bottom: 0; }'+
-                        'p { margin: 0.3em 0; }'+
-                        'table { width: 100%; border-collapse: collapse; margin-top: 1em; }'+
-                        'th, td { border: 1px solid black; padding: 8px; text-align: center; }'+
-                        '.total-row { font-weight: bold; }'+
-                    '<\/style>'+
-                '<\/head>'+
+            const price = currency === 'USD'
+                ? (product.netAmountInDollar || 1)
+                : (product.netAmount || 1);
 
-                '<body>'+
-                    '<h2 style="text-align: center;">مركز القلعة<\/h2><hr\/>'+
-                    '<p><strong>التاريخ:</strong><span> '+`${now}`+'<\/span><\/p>'+
-                    '<p><strong>رقم الفاتورة:</strong> <span> '+`${data.invoiceNumber}`+'<\/span><\/p><hr\/>'+
-                    '<table style="width: 100%; border-collapse: collapse;" class="table" border="1">'+
-                        '<thead>'+
-                            '<tr>'+
-                                '<th>الوصف<\/th>'+
-                                '<th>النوع<\/th>'+
-                                '<th>السعر الافرادي<\/th>'+
-                                '<th>الكمية<\/th>'+
-                                '<th>الإجمالي<\/th>'+
-                            '<\/tr>'+
-                        '<\/thead>'+
-                        '<tbody>'+
-                            `${rowsHtml}`+
-                        '<\/tbody>'+
-                    '<\/table>'+
-                    '<p style="margin-top: 20px; text-align: left;">'+
-                    '<strong>الإجمالي الكلي: </strong><span>'+`${totalAll.toFixed(2)}`+'<\/span><\/p>'
-                    '<scr'+'ipt>'+
-                        'window.onload = function () {'+
-                        'window.print();'+
-                        'setTimeout(() => window.close(), 800);'+
-                    '}'+
-                    '<\/scr'+'ipt>'+
-                '<\/body>'+
-                `<\/html>`;
-                const win = window.open("", "_blank");
-                win.document.open();
-                win.document.write(htmlContent);
-                win.document.close();
-                win.focus();
-                win.onafterprint = function () {
-                    win.close();
-                    if (win.opener) {
-                            win.opener.location.reload();
-                        }
-                };
-                win.print();
+            inputRow.querySelector('.price-input').value = price;
+            inputRow.querySelector('.quantity-input').value = 1;
 
-                
+            // حساب الإجمالي = السعر × الكمية
+            inputRow.querySelector('.total-input').value = price * 1;
+
+            // إغلاق المودال
+            const modal = bootstrap.Modal.getInstance(document.getElementById('itemSearchModal'));
+            modal.hide();
         }
+
+        
+        function finalizeInputRow(button) {
+            const row = button.closest('tr');
+            convertInputRowToDataRow(row);
+        }
+        function updateRowTotal(input) {
+            const row = input.closest('tr');
+            const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            const totalInput = row.querySelector('.total-input');
+            totalInput.value = (qty * price).toFixed(2);
+        }
+
 
     </script>
 
